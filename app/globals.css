@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-secondary-fixed-dim: #c6c6c7;
+  --color-outline-variant: #3a4a49;
+  --color-surface-container-high: #2a2a2a;
+  --color-on-error: #690005;
+  --color-on-primary-container: #007070;
+  --color-outline: #839493;
+  --color-on-background: #e2e2e2;
+  --color-surface-tint: #00dddd;
+  --color-inverse-surface: #e2e2e2;
+  --color-error: #ffb4ab;
+  --color-on-primary-fixed: #002020;
+  --color-background: #131313;
+  --color-surface-container-low: #1b1b1b;
+  --color-tertiary-fixed: #efe3a9;
+  --color-on-tertiary-container: #6d6536;
+  --color-error-container: #93000a;
+  --color-on-secondary: #2f3131;
+  --color-on-secondary-fixed-variant: #454747;
+  --color-secondary-fixed: #e2e2e2;
+  --color-tertiary-container: #efe3a9;
+  --color-inverse-primary: #006a6a;
+  --color-on-secondary-fixed: #1a1c1c;
+  --color-on-tertiary: #373107;
+  --color-primary-fixed-dim: #00dddd;
+  --color-on-tertiary-fixed: #201c00;
+  --color-on-error-container: #ffdad6;
+  --color-secondary: #c6c6c7;
+  --color-on-surface-variant: #b9cac9;
+  --color-surface-variant: #353535;
+  --color-tertiary: #ffffff;
+  --color-secondary-container: #454747;
+  --color-primary-container: #00fbfb;
+  --color-surface-container: #1f1f1f;
+  --color-surface: #131313;
+  --color-inverse-on-surface: #303030;
+  --color-surface-dim: #131313;
+  --color-surface-bright: #393939;
+  --color-tertiary-fixed-dim: #d2c78f;
+  --color-on-secondary-container: #b4b5b5;
+  --color-on-tertiary-fixed-variant: #4e471c;
+  --color-on-primary: #003737;
+  --color-primary: #ffffff;
+  --color-surface-container-lowest: #0e0e0e;
+  --color-on-primary-fixed-variant: #004f4f;
+  --color-primary-fixed: #00fbfb;
+  --color-on-surface: #e2e2e2;
+  --color-surface-container-highest: #353535;
+}
+
+body {
+    background-color: #000000;
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+}
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.glass-panel {
+    background: rgba(31, 31, 31, 0.8);
+    backdrop-filter: blur(24px);
+}
+
+/* Custom range slider styling for PhET Lab feel */
+input[type=range] { -webkit-appearance: none; background: transparent; cursor: pointer; }
+input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; background: #353535; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #00fbfb; margin-top: -7px; transition: box-shadow 0.1s ease; }
+input[type=range]:focus::-webkit-slider-thumb { box-shadow: 0 0 0 4px rgba(0, 251, 251, 0.2); }
