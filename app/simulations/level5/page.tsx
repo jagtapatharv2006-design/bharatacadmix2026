@@ -9,7 +9,7 @@ const htmlContent = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Schrödinger's Cave — Level 5: Quantum Tunneling</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"><\/script>
     <style>
@@ -289,6 +289,66 @@ const htmlContent = `<!DOCTYPE html>
             cursor: pointer; border: none; font-size: 0.9em;
         }
         .btn-continue:hover { opacity: 0.85; }
+
+        /* ── MOBILE RESPONSIVE ──────────────────────── */
+        @media (max-width: 700px) {
+            #header { padding: 10px 0 6px; }
+            #header h1 { font-size: 0.8em; letter-spacing: 3px; }
+            #header .level-tag { font-size: 0.55em; }
+            #app { padding: 0 8px 16px; gap: 8px; }
+            #controls {
+                flex-direction: column;
+                gap: 8px;
+                max-width: 100%;
+            }
+            .ctrl-group { padding: 10px 12px; }
+            .ctrl-label { font-size: 0.6em; }
+            .btn { padding: 7px 14px; font-size: 0.78em; }
+            .b-btn { padding: 6px 0; font-size: 0.72em; }
+            #task-bar { font-size: 0.62em; padding: 6px 12px; max-width: 100%; }
+            #prob-display { font-size: 0.68em; }
+            .sl-readout { font-size: 0.62em; }
+            #float-nav {
+                position: fixed;
+                bottom: 8px;
+                left: 50%;
+                top: auto;
+                right: auto;
+                transform: translateX(-50%);
+                flex-direction: row;
+                gap: 6px;
+            }
+            .float-btn {
+                width: auto;
+                padding: 7px 12px;
+                font-size: 0.65em;
+                border-radius: 20px;
+            }
+            .float-btn:hover { transform: none; }
+            #quick-panel {
+                position: fixed;
+                bottom: 50px;
+                left: 5%;
+                right: 5%;
+                top: auto;
+                width: 90%;
+                transform: none;
+                border-radius: 10px;
+            }
+            #quick-panel.visible {
+                transform: none;
+            }
+            #success-box { width: min(90vw, 460px); padding: 24px 20px; }
+            #success-box h2 { font-size: 1.2em; }
+            #success-box p { font-size: 0.82em; }
+        }
+
+        @media (max-width: 420px) {
+            .barrier-btns { flex-wrap: wrap; }
+            .b-btn { min-width: 50px; }
+            #controls { gap: 6px; }
+            .ctrl-group { padding: 8px 10px; gap: 6px; }
+        }
     </style>
 </head>
 <body>
@@ -551,10 +611,24 @@ let bounceAnim = 0;
 let successTriggered = false;
 let waveTime = 0;
 
+function getCanvasSize() {
+    let wrapper = document.getElementById('canvas-wrapper');
+    let w = wrapper ? wrapper.offsetWidth : Math.min(820, window.innerWidth - 20);
+    if (w < 100) w = Math.min(820, window.innerWidth - 20);
+    let h = Math.round(w * 0.537);
+    return { w: w, h: h };
+}
+
 function setup() {
-    let cnv = createCanvas(820, 440);
+    let sz = getCanvasSize();
+    let cnv = createCanvas(sz.w, sz.h);
     cnv.parent('canvas-wrapper');
     updateProbDisplay();
+}
+
+function windowResized() {
+    let sz = getCanvasSize();
+    resizeCanvas(sz.w, sz.h);
 }
 
 function draw() {
@@ -900,8 +974,8 @@ export default function Level5Page() {
   if (!User) return null;
 
   return (
-    <div className="flex flex-col items-center w-full px-4 h-[calc(100vh-140px)]">
-      <div className="w-full h-full max-w-6xl rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(255,107,53,0.1)] border border-outline-variant/20 relative">
+    <div className="flex flex-col items-center w-full px-2 sm:px-4">
+      <div className="w-full max-w-6xl rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(255,107,53,0.1)] border border-outline-variant/20 relative h-[calc(100dvh-90px)] sm:h-[calc(100dvh-120px)]">
         <iframe
           srcDoc={htmlContent}
           className="w-full h-full border-none bg-surface"

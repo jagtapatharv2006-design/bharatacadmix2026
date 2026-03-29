@@ -10,7 +10,7 @@ const htmlContent = `
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>The Cave Mystery</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"><\/script>
     <style>
@@ -82,6 +82,7 @@ const htmlContent = `
             padding: 15px;
             border-radius: 15px;
             justify-content: center;
+            flex-wrap: wrap;
         }
 
         .btn {
@@ -93,6 +94,8 @@ const htmlContent = `
             cursor: pointer;
             font-weight: 600;
             transition: all 0.2s;
+            min-width: 100px;
+            text-align: center;
         }
 
         .btn.active { background: #00d4ff; color: #05050a; box-shadow: 0 0 15px rgba(0, 212, 255, 0.4); }
@@ -104,7 +107,7 @@ const htmlContent = `
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 400px;
+            width: min(400px, 90vw);
             background: rgba(10, 20, 40, 0.95);
             border: 2px solid #00d4ff;
             padding: 25px;
@@ -121,14 +124,32 @@ const htmlContent = `
             background: #00d4ff; 
             color: #000; 
             border: none; 
-            padding: 5px 15px; 
+            padding: 8px 18px; 
             border-radius: 5px; 
             cursor: pointer; 
             float: right;
             font-weight: bold;
+            font-size: 0.9rem;
         }
 
-        @media (max-width: 900px) { #game-container { grid-template-columns: 1fr; } }
+        @media (max-width: 900px) {
+            #game-container { grid-template-columns: 1fr; padding: 16px; gap: 14px; }
+            #sidebar { padding: 16px; }
+            #sidebar h2 { font-size: 1.2rem; margin-bottom: 12px; }
+        }
+
+        @media (max-width: 500px) {
+            body { padding: 6px; }
+            #game-container { padding: 10px; gap: 10px; border-radius: 14px; }
+            #sidebar { padding: 12px; font-size: 0.85rem; border-radius: 12px; }
+            #sidebar h2 { font-size: 1.1rem; }
+            #sidebar h3 { font-size: 0.85rem; }
+            #controls { padding: 10px; gap: 8px; }
+            .btn { padding: 10px 16px; font-size: 0.85rem; min-width: 80px; }
+            #popup { padding: 18px; }
+            #popup h4 { font-size: 0.95rem; }
+            #popup p { font-size: 0.82rem; }
+        }
     </style>
 </head>
 <body>
@@ -177,10 +198,27 @@ const htmlContent = `
     let detectedPoints = [];
     let borderAlpha = 0; 
     let popupTriggered = false;
+    let cW, cH;
+
+    function getCanvasSize() {
+        let holder = document.getElementById('p5-holder');
+        let w = holder ? holder.offsetWidth : Math.min(800, window.innerWidth - 40);
+        if (w < 100) w = Math.min(800, window.innerWidth - 40);
+        let h = Math.round(w * 0.6);
+        return { w: w, h: h };
+    }
 
     function setup() {
-        let canvas = createCanvas(800, 480);
+        let sz = getCanvasSize();
+        cW = sz.w; cH = sz.h;
+        let canvas = createCanvas(cW, cH);
         canvas.parent('p5-holder');
+    }
+
+    function windowResized() {
+        let sz = getCanvasSize();
+        cW = sz.w; cH = sz.h;
+        resizeCanvas(cW, cH);
     }
 
     function draw() {
@@ -189,7 +227,7 @@ const htmlContent = `
         // Draw Cave Entrance
         noStroke();
         fill(0, 0, 0, 150);
-        rect(0, 0, 150, height);
+        rect(0, 0, width * 0.1875, height);
 
         drawDynamicBear();
 
@@ -205,28 +243,21 @@ const htmlContent = `
             p.x += p.vx;
             p.y += p.vy;
 
-            // Simple Bear Interaction Check
-            // Bear center is roughly (450, 240)
-            let d = dist(p.x, p.y, width/2 + 50, height/2);
+            let d = dist(p.x, p.y, width/2 + width*0.0625, height/2);
             
-            // Interaction logic based on particle size and proximity to "outline"
-            // If ball hits the general area of the bear parts
-            if (checkBearCollision(p.x - (width/2 + 50), p.y - height/2)) {
+            if (checkBearCollision(p.x - (width/2 + width*0.0625), p.y - height/2)) {
                 
                 if (mode === 'quantum') {
-                    // Gradual glow increase
                     borderAlpha += 0.15; 
                     if (borderAlpha > 255) borderAlpha = 255;
 
-                    // Trigger Pop-up when bear starts becoming visible
                     if (borderAlpha > 40 && !popupTriggered) {
                         showPopup();
                         popupTriggered = true;
                     }
                 }
                 
-                // Create the interaction "spot"
-                let spotSize = p.w; // Match ball dimension
+                let spotSize = p.w;
                 let spotColor = color(0, 212, 255, mode === 'quantum' ? 50 : 180);
 
                 detectedPoints.push({
@@ -236,12 +267,10 @@ const htmlContent = `
                     col: spotColor
                 });
 
-                // Remove particle on hit
                 particles.splice(i, 1);
                 continue;
             }
 
-            // Draw active particles
             noStroke();
             fill(p.col);
             if(mode === 'quantum') {
@@ -256,56 +285,56 @@ const htmlContent = `
 
         if (frameCount % 6 === 0) fire();
 
-        // Limit detected points for performance
         if (detectedPoints.length > 800) detectedPoints.shift();
     }
 
     function checkBearCollision(lx, ly) {
-        // Simple distance checks relative to bear local origin
-        if (dist(lx, ly, 0, 35) < 45) return true;    // Body
-        if (dist(lx, ly, 0, -35) < 32) return true;   // Head
-        if (dist(lx, ly, -25, -60) < 11) return true; // Ear L
-        if (dist(lx, ly, 25, -60) < 11) return true;  // Ear R
+        let scale = height / 480;
+        if (dist(lx, ly, 0, 35 * scale) < 45 * scale) return true;
+        if (dist(lx, ly, 0, -35 * scale) < 32 * scale) return true;
+        if (dist(lx, ly, -25 * scale, -60 * scale) < 11 * scale) return true;
+        if (dist(lx, ly, 25 * scale, -60 * scale) < 11 * scale) return true;
         return false;
     }
 
     function drawDynamicBear() {
         push();
-        translate(width/2 + 50, height/2);
+        translate(width/2 + width*0.0625, height/2);
+        let scale = height / 480;
         
-        // Gradual Glowing Outline
         if (borderAlpha > 1) {
             noFill();
             stroke(0, 212, 255, borderAlpha);
             strokeWeight(2);
             drawingContext.shadowBlur = 15;
             drawingContext.shadowColor = 'rgba(0, 212, 255, 0.8)';
-            renderBearShapes(); 
+            renderBearShapes(scale); 
             drawingContext.shadowBlur = 0;
         }
 
-        // Hidden body
         noStroke();
         fill(20, 20, 30); 
-        renderBearShapes();
+        renderBearShapes(scale);
         pop();
     }
 
-    function renderBearShapes() {
-        circle(0, 35, 90);    
-        circle(0, -35, 65);   
-        circle(-25, -60, 22); 
-        circle(25, -60, 22);  
+    function renderBearShapes(s) {
+        s = s || 1;
+        circle(0, 35*s, 90*s);    
+        circle(0, -35*s, 65*s);   
+        circle(-25*s, -60*s, 22*s); 
+        circle(25*s, -60*s, 22*s);  
     }
 
     function fire() {
-        let py = height/2 + random(-150, 150);
+        let py = height/2 + random(-height*0.3125, height*0.3125);
+        let speedScale = width / 800;
         let p = {
             x: -20,
             y: py,
-            vx: mode === 'large' ? 5 : (mode === 'medium' ? 8 : 12),
+            vx: (mode === 'large' ? 5 : (mode === 'medium' ? 8 : 12)) * speedScale,
             vy: random(-0.2, 0.2),
-            w: mode === 'large' ? 45 : (mode === 'medium' ? 12 : 4),
+            w: (mode === 'large' ? 45 : (mode === 'medium' ? 12 : 4)) * (height/480),
             col: mode === 'large' ? color(255, 100, 100, 100) : (mode === 'medium' ? color(100, 200, 255, 150) : color(0, 255, 255))
         };
         particles.push(p);
@@ -314,7 +343,6 @@ const htmlContent = `
     function setMode(m) {
         mode = m;
         particles = [];
-        // Reset detected points and glow if switching modes to see the difference clearly
         detectedPoints = [];
         borderAlpha = 0; 
         popupTriggered = false;
@@ -359,8 +387,8 @@ export default function Level1Page() {
   if (!User) return null;
 
   return (
-    <div className="flex flex-col items-center w-full px-4">
-      <div className="w-full max-w-6xl rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(0,251,251,0.1)] border border-outline-variant/20 relative" style={{ height: 'calc(100vh - 120px)', minHeight: '700px' }}>
+    <div className="flex flex-col items-center w-full px-2 sm:px-4">
+      <div className="w-full max-w-6xl rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(0,251,251,0.1)] border border-outline-variant/20 relative h-[calc(100dvh-90px)] sm:h-[calc(100dvh-120px)]">
         <iframe
           srcDoc={htmlContent}
           className="w-full h-full border-none bg-surface"

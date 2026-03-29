@@ -76,7 +76,7 @@ export default function Simulations() {
   ];
 
   return (
-    <div className="flex flex-col items-center px-6 py-12">
+    <div className="flex flex-col items-center px-4 sm:px-6 py-8 sm:py-12">
       <div className="w-full max-w-5xl">
         <header className="mb-12 border-b border-surface-container-high pb-6">
           <span className="text-primary-fixed text-sm font-bold tracking-[0.3em] uppercase mb-2 block">

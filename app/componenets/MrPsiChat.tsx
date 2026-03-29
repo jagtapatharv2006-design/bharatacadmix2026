@@ -77,7 +77,7 @@ export default function MrPsiChat({
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-[9999] w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110 border-2"
+        className="fixed bottom-6 right-6 z-[9999] w-14 h-14 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110 border-2"
         style={{
           background: "linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 100%)",
           borderColor: "rgba(0,212,255,0.6)",
@@ -92,9 +92,9 @@ export default function MrPsiChat({
 
   return (
     <div
-      className="fixed bottom-6 right-6 z-[9999] flex flex-col w-80 rounded-xl overflow-hidden shadow-2xl"
+      className="fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-[9999] flex flex-col w-full sm:w-80 rounded-none sm:rounded-xl overflow-hidden shadow-2xl"
       style={{
-        height: "480px",
+        height: "min(480px, 85dvh)",
         background: "rgba(8,8,24,0.97)",
         border: "1px solid rgba(0,212,255,0.3)",
         boxShadow: "0 0 40px rgba(0,212,255,0.12), 0 20px 60px rgba(0,0,0,0.5)",
