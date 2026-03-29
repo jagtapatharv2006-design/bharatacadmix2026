@@ -349,6 +349,62 @@ const htmlContent = `<!DOCTYPE html>
             #controls { gap: 6px; }
             .ctrl-group { padding: 8px 10px; gap: 6px; }
         }
+
+        /* QUIZ */
+        #quiz-overlay {
+            position: fixed; inset: 0; background: rgba(2,2,14,0.96); z-index: 500;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        #quiz-overlay.show { opacity: 1; pointer-events: all; }
+        #quiz-box {
+            width: min(520px, 92vw); background: #09091a; border: 2px solid var(--orange);
+            border-radius: 16px; padding: 30px 28px;
+            box-shadow: 0 0 60px rgba(255,107,53,0.2); position: relative;
+        }
+        #quiz-close {
+            position: absolute; top: 14px; right: 16px; background: transparent;
+            border: 1px solid rgba(255,107,53,0.35); color: rgba(255,107,53,0.7);
+            border-radius: 50%; width: 30px; height: 30px; font-size: 1em;
+            cursor: pointer; font-family: monospace;
+            display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        }
+        #quiz-close:hover { background: rgba(255,107,53,0.1); color: #fff; }
+        #quiz-level-tag { font-family: 'Space Mono',monospace; font-size: 0.62em; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,107,53,0.55); margin-bottom: 6px; }
+        #quiz-progress { font-family: 'Space Mono',monospace; font-size: 0.68em; color: rgba(255,255,255,0.35); letter-spacing: 2px; text-align: right; margin-bottom: 14px; }
+        #quiz-question { font-size: 1em; font-weight: 600; color: #fff; margin-bottom: 18px; line-height: 1.5; }
+        .quiz-option {
+            width: 100%; text-align: left; background: rgba(255,107,53,0.04);
+            border: 1px solid rgba(255,107,53,0.2); color: #ccc; border-radius: 8px;
+            padding: 10px 14px; margin-bottom: 9px; font-family: 'Rajdhani',sans-serif;
+            font-size: 0.92rem; cursor: pointer; transition: 0.2s; display: block;
+        }
+        .quiz-option:hover:not(:disabled) { border-color: var(--orange); color: #fff; background: rgba(255,107,53,0.1); }
+        .quiz-option.correct { border-color: #00ff9d; background: rgba(0,255,157,0.12); color: #00ff9d; }
+        .quiz-option.wrong   { border-color: #ff4757; background: rgba(255,71,87,0.12); color: #ff4757; }
+        #quiz-explanation {
+            font-size: 0.85rem; line-height: 1.5; color: #aaa;
+            background: rgba(255,255,255,0.04); border-left: 3px solid var(--orange);
+            padding: 10px 14px; border-radius: 0 6px 6px 0; margin-top: 4px; display: none;
+        }
+        #quiz-next-btn {
+            margin-top: 16px; width: 100%; background: var(--orange); color: #000;
+            border: none; border-radius: 8px; padding: 10px; font-family: 'Rajdhani',sans-serif;
+            font-weight: 700; font-size: 0.88rem; letter-spacing: 1px;
+            text-transform: uppercase; cursor: pointer; display: none; transition: 0.2s;
+        }
+        #quiz-next-btn:hover { opacity: 0.85; }
+        #quiz-score-screen { text-align: center; display: none; }
+        #quiz-score-screen h3 { font-family: 'Space Mono',monospace; font-size: 1.2rem; color: var(--orange); margin-bottom: 10px; letter-spacing: 2px; }
+        #quiz-score-num { font-family: 'Space Mono',monospace; font-size: 2.8rem; font-weight: 700; color: #fff; }
+        #quiz-score-msg { font-size: 0.9rem; color: #aaa; margin: 10px 0 20px; }
+        #quiz-retry-btn {
+            background: transparent; border: 1px solid var(--orange); color: var(--orange);
+            border-radius: 8px; padding: 9px 24px; font-family: 'Rajdhani',sans-serif;
+            font-weight: 700; cursor: pointer; font-size: 0.85rem;
+            letter-spacing: 1px; text-transform: uppercase;
+        }
+        #quiz-retry-btn:hover { background: var(--orange); color: #000; }
     </style>
 </head>
 <body>
@@ -433,11 +489,32 @@ const htmlContent = `<!DOCTYPE html>
     <button class="float-btn" id="fb-formula" onclick="toggleQuickPanel('formula')">Formula</button>
     <button class="float-btn" id="fb-hint"    onclick="toggleQuickPanel('hint')">Hint</button>
     <button class="float-btn" id="fb-notes"   onclick="openMindmap()">Notes</button>
+    <button class="float-btn" id="fb-quiz"    onclick="openQuiz()">Quiz</button>
 </div>
 
 <div id="quick-panel">
     <div id="qp-title"></div>
     <div id="qp-body"></div>
+</div>
+
+<div id="quiz-overlay">
+    <div id="quiz-box">
+        <button id="quiz-close" onclick="closeQuiz()">✕</button>
+        <div id="quiz-level-tag">Level 5 — Knowledge Check</div>
+        <div id="quiz-progress"></div>
+        <div id="quiz-q-wrap">
+            <div id="quiz-question"></div>
+            <div id="quiz-options"></div>
+            <div id="quiz-explanation"></div>
+            <button id="quiz-next-btn" onclick="quizNext()">Next</button>
+        </div>
+        <div id="quiz-score-screen">
+            <h3>QUIZ COMPLETE</h3>
+            <div id="quiz-score-num"></div>
+            <div id="quiz-score-msg"></div>
+            <button id="quiz-retry-btn" onclick="quizRetry()">↻ Retry</button>
+        </div>
+    </div>
 </div>
 
 <div id="header">
@@ -947,6 +1024,69 @@ document.querySelectorAll('.child-node').forEach(node => {
         }
     });
 });
+
+const QUIZ_DATA = [
+    {q:'Quantum tunneling?',options:['Dig hole','Pass barrier','Jump','Cave'],answer:1,explanation:'Particle crosses a barrier classically forbidden to it.'},
+    {q:'Classical E<V?',options:['Pass','Reflect','Teleport','Gain energy'],answer:1,explanation:'Classically the particle cannot cross — it is reflected.'},
+    {q:'Thicker barrier?',options:['Increase probability','Decrease probability','Same','Always pass'],answer:1,explanation:'T \u221d e^(-2\u03baL) — exponential drop with thickness.'},
+    {q:'Higher energy?',options:['Decrease','Increase tunneling','Zero','Same'],answer:1,explanation:'Higher E \u2192 smaller (V₀-E) \u2192 less decay \u2192 more tunneling.'},
+    {q:'Real use?',options:['Ship sails','STM microscope','Lens','Engine'],answer:1,explanation:'Scanning Tunneling Microscope (STM) uses quantum tunneling to image atoms.'}
+];
+let qIdx=0, qScore=0, qAnswered=false;
+
+function openQuiz() {
+    qIdx=0; qScore=0;
+    if(activePanel){ document.getElementById('quick-panel').classList.remove('visible'); activePanel=null; }
+    document.getElementById('quiz-overlay').classList.add('show');
+    document.getElementById('quiz-score-screen').style.display='none';
+    document.getElementById('quiz-q-wrap').style.display='block';
+    renderQuestion();
+}
+function closeQuiz(){ document.getElementById('quiz-overlay').classList.remove('show'); }
+function renderQuestion(){
+    const d=QUIZ_DATA[qIdx]; qAnswered=false;
+    document.getElementById('quiz-progress').textContent=(qIdx+1)+' / '+QUIZ_DATA.length;
+    document.getElementById('quiz-question').textContent=d.q;
+    document.getElementById('quiz-explanation').style.display='none';
+    document.getElementById('quiz-next-btn').style.display='none';
+    const opts=document.getElementById('quiz-options'); opts.innerHTML='';
+    d.options.forEach(function(opt,i){
+        var btn=document.createElement('button');
+        btn.className='quiz-option'; btn.textContent=opt;
+        btn.onclick=function(){ if(!qAnswered) pickAnswer(i,btn); };
+        opts.appendChild(btn);
+    });
+}
+function pickAnswer(i,btn){
+    qAnswered=true;
+    const d=QUIZ_DATA[qIdx];
+    const allBtns=document.querySelectorAll('.quiz-option');
+    allBtns.forEach(function(b){ b.disabled=true; });
+    if(i===d.answer){ btn.classList.add('correct'); qScore++; }
+    else { btn.classList.add('wrong'); allBtns[d.answer].classList.add('correct'); }
+    const exp=document.getElementById('quiz-explanation');
+    exp.textContent=d.explanation; exp.style.display='block';
+    const nxt=document.getElementById('quiz-next-btn');
+    nxt.style.display='block';
+    nxt.textContent=qIdx<QUIZ_DATA.length-1?'Next \u2192':'See Results';
+}
+function quizNext(){
+    qIdx++;
+    if(qIdx<QUIZ_DATA.length){ renderQuestion(); }
+    else{
+        document.getElementById('quiz-q-wrap').style.display='none';
+        document.getElementById('quiz-score-screen').style.display='block';
+        document.getElementById('quiz-score-num').textContent=qScore+' / '+QUIZ_DATA.length;
+        const msgs=['Keep exploring!','Good effort!','Nice work!','Great job!','Quantum Master!'];
+        document.getElementById('quiz-score-msg').textContent=msgs[qScore]||msgs[0];
+    }
+}
+function quizRetry(){
+    qIdx=0; qScore=0;
+    document.getElementById('quiz-score-screen').style.display='none';
+    document.getElementById('quiz-q-wrap').style.display='block';
+    renderQuestion();
+}
 <\/script>
 </body>
 </html>`;

@@ -505,6 +505,62 @@ const htmlContent = `<!DOCTYPE html>
             #controls { gap: 6px; }
             .ctrl-group { padding: 8px 10px; gap: 6px; }
         }
+
+        /* QUIZ */
+        #quiz-overlay {
+            position: fixed; inset: 0; background: rgba(2,2,14,0.96); z-index: 500;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        #quiz-overlay.show { opacity: 1; pointer-events: all; }
+        #quiz-box {
+            width: min(520px, 92vw); background: #09091a; border: 2px solid var(--cyan);
+            border-radius: 16px; padding: 30px 28px;
+            box-shadow: 0 0 60px rgba(0,212,255,0.25); position: relative;
+        }
+        #quiz-close {
+            position: absolute; top: 14px; right: 16px; background: transparent;
+            border: 1px solid rgba(0,212,255,0.3); color: rgba(0,212,255,0.6);
+            border-radius: 50%; width: 30px; height: 30px; font-size: 1em;
+            cursor: pointer; font-family: monospace;
+            display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        }
+        #quiz-close:hover { background: rgba(0,212,255,0.1); color: #fff; }
+        #quiz-level-tag { font-family: 'Space Mono',monospace; font-size: 0.62em; letter-spacing: 3px; text-transform: uppercase; color: rgba(0,212,255,0.5); margin-bottom: 6px; }
+        #quiz-progress { font-family: 'Space Mono',monospace; font-size: 0.68em; color: rgba(255,255,255,0.35); letter-spacing: 2px; text-align: right; margin-bottom: 14px; }
+        #quiz-question { font-size: 1em; font-weight: 600; color: #fff; margin-bottom: 18px; line-height: 1.5; }
+        .quiz-option {
+            width: 100%; text-align: left; background: rgba(0,212,255,0.04);
+            border: 1px solid rgba(0,212,255,0.2); color: #ccc; border-radius: 8px;
+            padding: 10px 14px; margin-bottom: 9px; font-family: 'Rajdhani',sans-serif;
+            font-size: 0.92rem; cursor: pointer; transition: 0.2s; display: block;
+        }
+        .quiz-option:hover:not(:disabled) { border-color: var(--cyan); color: #fff; background: rgba(0,212,255,0.1); }
+        .quiz-option.correct { border-color: #00ff9d; background: rgba(0,255,157,0.12); color: #00ff9d; }
+        .quiz-option.wrong   { border-color: #ff4757; background: rgba(255,71,87,0.12); color: #ff4757; }
+        #quiz-explanation {
+            font-size: 0.85rem; line-height: 1.5; color: #aaa;
+            background: rgba(255,255,255,0.04); border-left: 3px solid var(--cyan);
+            padding: 10px 14px; border-radius: 0 6px 6px 0; margin-top: 4px; display: none;
+        }
+        #quiz-next-btn {
+            margin-top: 16px; width: 100%; background: var(--cyan); color: #000;
+            border: none; border-radius: 8px; padding: 10px; font-family: 'Rajdhani',sans-serif;
+            font-weight: 700; font-size: 0.88rem; letter-spacing: 1px;
+            text-transform: uppercase; cursor: pointer; display: none; transition: 0.2s;
+        }
+        #quiz-next-btn:hover { opacity: 0.85; }
+        #quiz-score-screen { text-align: center; display: none; }
+        #quiz-score-screen h3 { font-family: 'Space Mono',monospace; font-size: 1.2rem; color: var(--cyan); margin-bottom: 10px; letter-spacing: 2px; }
+        #quiz-score-num { font-family: 'Space Mono',monospace; font-size: 2.8rem; font-weight: 700; color: #fff; }
+        #quiz-score-msg { font-size: 0.9rem; color: #aaa; margin: 10px 0 20px; }
+        #quiz-retry-btn {
+            background: transparent; border: 1px solid var(--cyan); color: var(--cyan);
+            border-radius: 8px; padding: 9px 24px; font-family: 'Rajdhani',sans-serif;
+            font-weight: 700; cursor: pointer; font-size: 0.85rem;
+            letter-spacing: 1px; text-transform: uppercase;
+        }
+        #quiz-retry-btn:hover { background: var(--cyan); color: #000; }
     </style>
 </head>
 <body>
@@ -1027,6 +1083,69 @@ function updateLReadout() {
 
 function dismissSuccess() {
     document.getElementById('success-overlay').classList.remove('show');
+}
+
+const QUIZ_DATA = [
+    {q:'Particle in box?',options:['Classical bounce','Confined quantum','Big particle','Magnet'],answer:1,explanation:'Energy is quantized when a particle is confined in a box.'},
+    {q:'n represents?',options:['Particles','Energy level','Width','Time'],answer:1,explanation:'n = quantum number, labelling the energy state.'},
+    {q:'Why specific patterns?',options:['Rubber cave','Boundary condition','Choice','Temp'],answer:1,explanation:'The wave must fit exactly between walls — boundary conditions.'},
+    {q:'Node?',options:['Max point','Zero point','Midpoint','Energy'],answer:1,explanation:'Node = zero amplitude of the wavefunction.'},
+    {q:'Energy narrow box?',options:['Decrease','Same','Increase','Stop'],answer:2,explanation:'Shorter wavelength forced by narrower box \u2192 higher energy.'}
+];
+let qIdx=0, qScore=0, qAnswered=false;
+
+function openQuiz() {
+    qIdx=0; qScore=0;
+    if(activePanel){ document.getElementById('quick-panel').classList.remove('visible'); activePanel=null; }
+    document.getElementById('quiz-overlay').classList.add('show');
+    document.getElementById('quiz-score-screen').style.display='none';
+    document.getElementById('quiz-q-wrap').style.display='block';
+    renderQuestion();
+}
+function closeQuiz(){ document.getElementById('quiz-overlay').classList.remove('show'); }
+function renderQuestion(){
+    const d=QUIZ_DATA[qIdx]; qAnswered=false;
+    document.getElementById('quiz-progress').textContent=(qIdx+1)+' / '+QUIZ_DATA.length;
+    document.getElementById('quiz-question').textContent=d.q;
+    document.getElementById('quiz-explanation').style.display='none';
+    document.getElementById('quiz-next-btn').style.display='none';
+    const opts=document.getElementById('quiz-options'); opts.innerHTML='';
+    d.options.forEach(function(opt,i){
+        var btn=document.createElement('button');
+        btn.className='quiz-option'; btn.textContent=opt;
+        btn.onclick=function(){ if(!qAnswered) pickAnswer(i,btn); };
+        opts.appendChild(btn);
+    });
+}
+function pickAnswer(i,btn){
+    qAnswered=true;
+    const d=QUIZ_DATA[qIdx];
+    const allBtns=document.querySelectorAll('.quiz-option');
+    allBtns.forEach(function(b){ b.disabled=true; });
+    if(i===d.answer){ btn.classList.add('correct'); qScore++; }
+    else { btn.classList.add('wrong'); allBtns[d.answer].classList.add('correct'); }
+    const exp=document.getElementById('quiz-explanation');
+    exp.textContent=d.explanation; exp.style.display='block';
+    const nxt=document.getElementById('quiz-next-btn');
+    nxt.style.display='block';
+    nxt.textContent=qIdx<QUIZ_DATA.length-1?'Next \u2192':'See Results';
+}
+function quizNext(){
+    qIdx++;
+    if(qIdx<QUIZ_DATA.length){ renderQuestion(); }
+    else{
+        document.getElementById('quiz-q-wrap').style.display='none';
+        document.getElementById('quiz-score-screen').style.display='block';
+        document.getElementById('quiz-score-num').textContent=qScore+' / '+QUIZ_DATA.length;
+        const msgs=['Keep exploring!','Good effort!','Nice work!','Great job!','Quantum Master!'];
+        document.getElementById('quiz-score-msg').textContent=msgs[qScore]||msgs[0];
+    }
+}
+function quizRetry(){
+    qIdx=0; qScore=0;
+    document.getElementById('quiz-score-screen').style.display='none';
+    document.getElementById('quiz-q-wrap').style.display='block';
+    renderQuestion();
 }
 </script>
 </body>

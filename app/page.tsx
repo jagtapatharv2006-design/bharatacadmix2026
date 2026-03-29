@@ -81,7 +81,7 @@ export default function Home() {
 
         <div className="relative z-10 text-center max-w-4xl">
           <span className="text-primary-fixed text-sm font-bold tracking-[0.4em] uppercase mb-6 block opacity-70">
-            QUANTUM SAFARI
+            <h1>QUANTUM SAFARI</h1>
           </span>
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-primary leading-[0.95] mb-8 tracking-tighter">
             Learn Quantum.<br />
