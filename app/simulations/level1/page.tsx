@@ -10,7 +10,7 @@ const htmlContent = `
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quantum Safari: Level 1</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"><\/script>
     <style>
@@ -25,8 +25,8 @@ const htmlContent = `
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 15px;
-            overflow: auto;
+            padding: 20px;
+            overflow: hidden;
         }
 
         #game-container {
@@ -42,7 +42,6 @@ const htmlContent = `
             position: relative;
         }
 
-        /* SIDEBAR STYLING */
         #sidebar {
             background: rgba(10, 10, 20, 0.9);
             padding: 25px;
@@ -57,10 +56,8 @@ const htmlContent = `
             margin-bottom: 25px; 
             text-transform: uppercase;
             text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
-            line-height: 1.3;
         }
 
-        /* TAB SYSTEM */
         .tab-buttons {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -78,14 +75,12 @@ const htmlContent = `
             cursor: pointer;
             font-size: 0.7rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
             transition: 0.3s ease;
         }
 
         .tab-buttons button:hover, .tab-buttons button.active {
             background: #00d4ff;
             color: #000;
-            box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
         }
 
         .tab-content {
@@ -96,12 +91,10 @@ const htmlContent = `
             font-size: 0.9rem;
             line-height: 1.5;
             min-height: 240px;
-            overflow-y: auto;
         }
 
         .highlight { color: #00d4ff; font-weight: bold; }
 
-        /* MAIN CANVAS */
         #main-content { display: flex; flex-direction: column; gap: 20px; justify-content: center; }
 
         #canvas-wrapper {
@@ -113,7 +106,6 @@ const htmlContent = `
             position: relative;
         }
 
-        /* CONTROLS */
         #controls {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -132,12 +124,75 @@ const htmlContent = `
             cursor: pointer;
             font-weight: bold;
             text-transform: uppercase;
-            font-size: 0.8rem;
             transition: 0.3s;
         }
         .btn-tool:hover, .btn-tool.active {
             background: #00d4ff;
             color: #000;
+        }
+
+        /* --- STYLED TRANSITION POPUP --- */
+        .overlay-popup {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            background: #0a0e1a; /* Dark background from image */
+            border: 2px solid #00d4ff;
+            padding: 35px;
+            border-radius: 20px;
+            z-index: 200;
+            display: none;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .overlay-popup h4 {
+            color: #f1e05a; /* Yellowish header */
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            line-height: 1.3;
+        }
+
+        .overlay-popup p {
+            font-size: 1.05rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        .overlay-popup .question-text {
+            color: #00d4ff;
+            font-style: italic;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .btn-continue { 
+            font-family: inherit;
+            background: #00d4ff; 
+            color: #000; 
+            border: none; 
+            padding: 10px 25px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            float: right;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+
+        .btn-close { 
+            font-family: inherit;
+            background: #00d4ff; 
+            color: #000; 
+            border: none; 
+            padding: 8px 20px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            float: right;
+            font-weight: bold;
         }
 
         /* QUIZ BUTTON */
@@ -256,104 +311,44 @@ const htmlContent = `
         }
         #quiz-retry-btn:hover { background: #00d4ff; color: #000; }
 
-        /* OVERLAY POPUPS */
-        .overlay-popup {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: min(450px, 90vw);
-            background: rgba(10, 20, 40, 0.98);
-            border: 2px solid #00d4ff;
-            padding: 25px;
-            border-radius: 15px;
-            z-index: 200;
-            box-shadow: 0 0 40px rgba(0, 212, 255, 0.6);
-            display: none;
-        }
-
-        .overlay-popup h4 { color: #ffeb3b; margin-bottom: 15px; font-size: 1.2rem; text-transform: uppercase; }
-        .overlay-popup p { margin-bottom: 15px; font-size: 0.95rem; line-height: 1.5; color: #fff; }
-        
-        .btn-close { 
-            font-family: inherit;
-            background: #00d4ff; 
-            color: #000; 
-            border: none; 
-            padding: 8px 20px; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            float: right;
-            font-weight: bold;
-        }
-
-        @media (max-width: 900px) {
-            body { align-items: flex-start; }
-            #game-container { grid-template-columns: 1fr; padding: 16px; gap: 14px; }
-            #sidebar { padding: 16px; }
-            #sidebar h2 { font-size: 1.2rem; margin-bottom: 12px; }
-        }
-
-        @media (max-width: 500px) {
-            body { padding: 6px; }
-            #game-container { padding: 10px; gap: 10px; border-radius: 14px; }
-            #sidebar { padding: 12px; font-size: 0.85rem; border-radius: 12px; }
-            #sidebar h2 { font-size: 1.1rem; }
-            #sidebar h3 { font-size: 0.85rem; }
-            #controls { padding: 10px; gap: 8px; flex-wrap: wrap; display: flex; }
-            .btn-tool { padding: 10px 16px; font-size: 0.85rem; min-width: 80px; flex: 1; text-align: center; }
-            .overlay-popup { padding: 18px; width: min(450px, 90vw); }
-            .overlay-popup h4 { font-size: 0.95rem; }
-            .overlay-popup p { font-size: 0.82rem; }
-            .tab-buttons { gap: 6px; }
-            .tab-buttons button { padding: 6px; font-size: 0.7rem; }
-            .tab-content { min-height: 120px; padding: 12px; font-size: 0.82rem; }
-        }
+        @media (max-width: 900px) { #game-container { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    
     <div id="intro-popup" class="overlay-popup" style="display: block;">
-        <h4>Level 1: Cave Mystery</h4>
-        <p>A hidden <strong>Quantum Bear</strong> is trapped in the darkness. Classical tools cannot see it.</p>
-        <p>Use different sized particles to probe the cave. Only <strong>Quantum Particles</strong> can penetrate the probability field and map the bear's entire form.</p>
+        <h4 style="color: #fff;">Level 1: Cave Mystery</h4>
+        <p>A hidden <strong>Quantum Bear</strong> is trapped in the darkness.</p>
+        <p>Fire particles to probe the darkness. Note that <strong>Quantum Particles</strong> are much smaller and can pass through, revealing both sides of the bear's boundary.</p>
         <button class="btn-close" onclick="closePopup('intro-popup')">Begin Search</button>
     </div>
 
     <div id="transition-popup" class="overlay-popup">
-        <h4>LEVEL 1 → 2: Wave-Particle Duality</h4>
-        <p><strong>The Discovery:</strong> You've mapped the outline! However, these dots are just a snapshot. The bear isn't a solid statue; it is a cloud of possibilities vibrating in the dark.</p>
-        <p style="color:#00d4ff; font-weight:bold; font-style:italic;">"Why does adding more wave frequencies together make the bear's 'glow' sharper and more localized?"</p>
-        <button class="btn-close" onclick="window.top.location.href='/simulations/level2'">Compose Waves</button>
+        <h4>LEVEL 1 &rarr; 2: Particle Size Effect to Wave Packet</h4>
+        <p>Target outline established. However, static detection is incomplete. The "dots" we used to find the bear are just a snapshot; the bear itself is vibrating, blurring into a cloud of possibilities.</p>
+        <p>If the bear is made of waves, how can it ever stay in one place?"</p>
+        <p class="question-text">"Why does adding more wave frequencies together make the bear's 'glow' sharper and more localized?"</p>
+        <button class="btn-continue" onclick="window.top.location.href='/simulations/level2'">Find Out</button>
     </div>
 
     <div id="sidebar">
         <h2>Level 1: Cave Mystery</h2>
-        
         <div class="sidebar-section">
             <div class="tab-buttons">
                 <button onclick="showTab('concept')" class="active">Concept</button>
                 <button onclick="showTab('hint')">Hint</button>
                 <button onclick="showTab('notes')">Reality</button>
             </div>
-
             <div id="concept" class="tab-content">
-                <p>Welcome to the <span class="highlight">Quantum Safari</span>. Traditional "big" objects cannot see the quantum world.</p>
-                <p style="margin-top:10px;">Only particles with a small enough <b>de Broglie wavelength</b> can interact with and pass through the bear's probability field.</p>
+                <p>Only particles with a small enough <b>de Broglie wavelength</b> can probe specific coordinates.</p>
             </div>
-
             <div id="hint" class="tab-content" style="display:none;">
-                <p><span class="highlight">Large Ball:<\/span> Too massive — bounces off the bear's front face. Can only see the front boundary.<\/p>
-                <p style="margin-top:8px;"><span class="highlight">Small Ball:<\/span> Passes through, but only glows at the front entry point — can't map the full shape.<\/p>
-                <p style="margin-top:8px;"><span class="highlight">Quantum Particle:<\/span> Penetrates the entire bear and glows at every boundary crossing, mapping the full outline!<\/p>
-            <\/div>
-
+                <p>Switch to <span class="highlight">Quantum Particles</span>. They penetrate the object to reveal the hidden back side.</p>
+            </div>
             <div id="notes" class="tab-content" style="display:none;">
-                <p>In quantum mechanics, particles don't have a single 'spot' until we measure them.</p>
-                <p style="margin-top:10px;">Every blue dot you see is a <b>measurement event</b> where a particle hit the boundary of the bear's probability field.</p>
-                <p class="highlight" style="margin-top:15px; text-align: center;">λ = h / mv</p>
+                <p class="highlight" style="text-align: center;">λ = h / mv</p>
+                <p>High velocity creates higher resolution probing.</p>
             </div>
         </div>
     </div>
@@ -362,12 +357,11 @@ const htmlContent = `
         <div id="canvas-wrapper">
             <div id="p5-holder"></div>
         </div>
-
         <div id="controls">
-            <button class="btn-tool" id="btn-large" onclick="setMode('large')">Large Ball<\/button>
-            <button class="btn-tool" id="btn-small" onclick="setMode('small')">Small Ball<\/button>
-            <button class="btn-tool active" id="btn-quantum" onclick="setMode('quantum')">Quantum Particle<\/button>
-        <\/div>
+            <button class="btn-tool" id="btn-large" onclick="setMode('large')">Large Ball</button>
+            <button class="btn-tool" id="btn-medium" onclick="setMode('medium')">Small Ball</button>
+            <button class="btn-tool active" id="btn-quantum" onclick="setMode('quantum')">Quantum Particle</button>
+        </div>
     </div>
 </div>
 
@@ -397,112 +391,80 @@ const htmlContent = `
     let mode = 'quantum';
     let particles = [];
     let detectedPoints = [];
-    let borderAlpha = 0;
+    let borderAlpha = 0; 
     let transitionTriggered = false;
-    let cW, cH;
-
-    function getCanvasSize() {
-        let holder = document.getElementById('p5-holder');
-        let w = holder ? holder.offsetWidth : Math.min(800, window.innerWidth - 40);
-        if (w < 100) w = Math.min(800, window.innerWidth - 40);
-        let h = Math.round(w * 0.6);
-        return { w: w, h: h };
-    }
 
     function setup() {
-        let sz = getCanvasSize();
-        cW = sz.w; cH = sz.h;
-        let canvas = createCanvas(cW, cH);
+        let canvas = createCanvas(800, 480);
         canvas.parent('p5-holder');
-    }
-
-    function windowResized() {
-        let sz = getCanvasSize();
-        cW = sz.w; cH = sz.h;
-        resizeCanvas(cW, cH);
     }
 
     function draw() {
         background(5, 5, 12);
         
-        // Grid lines
-        stroke(255, 255, 255, 15);
+        stroke(255, 255, 255, 10);
         for(let i=0; i<width; i+=40) line(i, 0, i, height);
         for(let j=0; j<height; j+=40) line(0, j, width, j);
 
         drawDynamicBear();
 
-        // Draw interaction spots (glow spots)
         for (let pt of detectedPoints) {
             noStroke();
             fill(pt.col);
             circle(pt.x, pt.y, pt.sz);
         }
 
-        let offsetX = width/2 + width*0.0625;
-        let offsetY = height/2;
-
         for (let i = particles.length - 1; i >= 0; i--) {
             let p = particles[i];
+            
+            let oldX = p.x;
+            let oldY = p.y;
+            let wasInside = checkBearCollision(oldX - (width/2 + 50), oldY - height/2);
 
-            // Large ball stuck at front — animate & expire
-            if (p.stopped) {
-                noStroke();
-                fill(p.col);
-                drawingContext.shadowBlur = 12;
-                drawingContext.shadowColor = 'rgba(255,80,80,0.8)';
-                circle(p.x, p.y, p.w);
-                drawingContext.shadowBlur = 0;
-                p.life--;
-                if (p.life <= 0) particles.splice(i, 1);
-                continue;
-            }
-
-            let wasInside = checkBearCollision(p.x - offsetX, p.y - offsetY);
             p.x += p.vx;
             p.y += p.vy;
-            let isInside = checkBearCollision(p.x - offsetX, p.y - offsetY);
 
-            if (mode === 'large') {
-                // Stop at first entry (front boundary only)
-                if (!wasInside && isInside) {
-                    p.x -= p.vx;
-                    p.stopped = true;
-                    p.life = 45;
-                    detectedPoints.push({ x: p.x, y: p.y, sz: p.w * 1.3, col: color(255, 80, 80, 200) });
+            let isInside = checkBearCollision(p.x - (width/2 + 50), p.y - height/2);
+
+            if (wasInside !== isInside) {
+                let hitX = p.x;
+                let hitY = p.y;
+                
+                for(let step = 0; step < 4; step++) {
+                    let midX = (oldX + hitX) / 2;
+                    let midY = (oldY + hitY) / 2;
+                    if (checkBearCollision(midX - (width/2 + 50), midY - height/2) === wasInside) {
+                        oldX = midX;
+                        oldY = midY;
+                    } else {
+                        hitX = midX;
+                        hitY = midY;
+                    }
                 }
-            } else if (mode === 'small') {
-                // Only glow at front entry point, then pass through silently
-                if (!wasInside && isInside && !p.hitOnce) {
-                    p.hitOnce = true;
-                    detectedPoints.push({ x: p.x, y: p.y, sz: p.w * 2.5, col: color(255, 200, 50, 210) });
-                }
-            } else {
-                // Quantum: glow at every boundary crossing — traces full outline
-                if (wasInside !== isInside) {
-                    borderAlpha += 0.8;
+
+                if (mode === 'quantum') {
+                    borderAlpha += 3.0; 
                     if (borderAlpha > 255) borderAlpha = 255;
-                    detectedPoints.push({ x: p.x, y: p.y, sz: p.w, col: color(0, 212, 255, 130) });
                 }
+                
+                detectedPoints.push({ 
+                    x: hitX, 
+                    y: hitY, 
+                    sz: mode === 'quantum' ? random(3, 6) : p.w * 0.8, 
+                    col: color(0, 212, 255, 180) 
+                });
             }
 
-            // Draw moving particle
             noStroke();
             fill(p.col);
-            if (mode === 'quantum') {
-                drawingContext.shadowBlur = 8;
-                drawingContext.shadowColor = 'cyan';
-            }
             circle(p.x, p.y, p.w);
-            drawingContext.shadowBlur = 0;
 
-            if (p.x > width + 100 || p.x < -100) particles.splice(i, 1);
+            if (p.x > width + 50) particles.splice(i, 1);
         }
 
-        if (frameCount % 6 === 0) fire();
+        if (frameCount % 10 === 0) fire();
         
-        // Performance management for points
-        if (detectedPoints.length > 2500) detectedPoints.shift();
+        if (detectedPoints.length > 2000) detectedPoints.shift();
 
         if (borderAlpha >= 255 && !transitionTriggered) {
             showPopup('transition-popup');
@@ -511,62 +473,46 @@ const htmlContent = `
     }
 
     function checkBearCollision(lx, ly) {
-        let s = height / 480;
-        // Bear collision boxes (relative to bear center)
-        if (dist(lx, ly, 0, 35*s) < 45*s) return true;  // Body
-        if (dist(lx, ly, 0, -35*s) < 32*s) return true; // Head
-        if (dist(lx, ly, -25*s, -60*s) < 11*s) return true; // Left Ear
-        if (dist(lx, ly, 25*s, -60*s) < 11*s) return true;  // Right Ear
+        if (dist(lx, ly, 0, 35) < 45) return true;  
+        if (dist(lx, ly, 0, -35) < 32) return true; 
+        if (dist(lx, ly, -25, -60) < 11) return true; 
+        if (dist(lx, ly, 25, -60) < 11) return true;  
         return false;
     }
 
     function drawDynamicBear() {
         push();
-        translate(width/2 + width*0.0625, height/2);
-        let s = height / 480;
-        
-        // Revealed outline
+        translate(width/2 + 50, height/2);
         if (borderAlpha > 1) {
             noFill();
             stroke(0, 212, 255, borderAlpha);
-            strokeWeight(3);
-            drawingContext.shadowBlur = 15;
-            drawingContext.shadowColor = 'rgba(0, 212, 255, 0.8)';
-            renderBearShapes(s); 
-            drawingContext.shadowBlur = 0;
+            strokeWeight(2);
+            renderBearShapes(); 
         }
-        
-        // Inner silhouette
         noStroke();
-        fill(20, 20, 30); 
-        renderBearShapes(s);
+        fill(15, 15, 25); 
+        renderBearShapes();
         pop();
     }
 
-    function renderBearShapes(s) {
-        s = s || 1;
-        circle(0, 35*s, 90*s);    
-        circle(0, -35*s, 65*s);   
-        circle(-25*s, -60*s, 22*s); 
-        circle(25*s, -60*s, 22*s);  
+    function renderBearShapes() {
+        circle(0, 35, 90);    
+        circle(0, -35, 65);   
+        circle(-25, -60, 22); 
+        circle(25, -60, 22);  
     }
 
     function fire() {
-        let py = height/2 + random(-height*0.375, height*0.375);
-        let speedScale = width / 800;
-        let s = height / 480;
-        let cfg = {
-            large:   { vx: 4,  w: 40*s, col: color(255, 80,  80,  180) },
-            small:   { vx: 9,  w: 10*s, col: color(255, 200, 50,  220) },
-            quantum: { vx: 12, w: 5*s,  col: color(0,   255, 255      ) }
-        }[mode];
-        particles.push({
-            x: -20, y: py,
-            vx: cfg.vx * speedScale,
+        let py = height/2 + random(-180, 180);
+        let p = {
+            x: -20,
+            y: py,
+            vx: mode === 'large' ? 4 : (mode === 'medium' ? 7 : 12),
             vy: random(-0.2, 0.2),
-            w: cfg.w, col: cfg.col,
-            stopped: false, hitOnce: false, life: 0
-        });
+            w: mode === 'large' ? 40 : (mode === 'medium' ? 14 : 5),
+            col: mode === 'large' ? color(255, 80, 80, 150) : (mode === 'medium' ? color(100, 180, 255, 180) : color(0, 255, 255, 200))
+        };
+        particles.push(p);
     }
 
     function setMode(m) {
@@ -574,6 +520,8 @@ const htmlContent = `
         borderAlpha = 0;
         detectedPoints = [];
         particles = [];
+        transitionTriggered = false;
+        closePopup('transition-popup');
         document.querySelectorAll('.btn-tool').forEach(b => b.classList.remove('active'));
         document.getElementById('btn-' + m).classList.add('active');
     }
@@ -581,19 +529,11 @@ const htmlContent = `
     function showTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
         document.querySelectorAll('.tab-buttons button').forEach(btn => btn.classList.remove('active'));
-        let target = document.getElementById(tabId);
-        if(target) target.style.display = 'block';
-        if(event && event.currentTarget) event.currentTarget.classList.add('active');
+        document.getElementById(tabId).style.display = 'block';
     }
 
-    function showPopup(id) { 
-        let popup = document.getElementById(id);
-        if(popup) popup.style.display = 'block'; 
-    }
-    function closePopup(id) { 
-        let popup = document.getElementById(id);
-        if(popup) popup.style.display = 'none'; 
-    }
+    function showPopup(id) { document.getElementById(id).style.display = 'block'; }
+    function closePopup(id) { document.getElementById(id).style.display = 'none'; }
 
     // ── QUIZ SYSTEM ──────────────────────────────────
     const QUIZ_DATA = [
