@@ -91,7 +91,7 @@ export default function Home() {
             5 interactive levels. Real physics. One brave bear.
           </p>
           <p className="text-sm text-on-surface-variant/50 font-light max-w-xl mx-auto mb-12 leading-relaxed italic">
-            Explore wave-particle duality, superposition, uncertainty, tunneling, and more — through hands-on simulations powered by p5.js, guided by MR.ψ, your AI quantum companion.
+            Explore wave-particle duality, superposition, uncertainty, tunneling, and more — through hands-on simulations, guided by MR.ψ, your AI quantum companion.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -113,7 +113,7 @@ export default function Home() {
           <div className="flex justify-center gap-12 mt-16 flex-wrap">
             {[
               { value: "5", label: "Levels" },
-              { value: "7", label: "Concepts" },
+              { value: "5", label: "Concepts" },
               { value: "∞", label: "Possibilities" },
             ].map((s) => (
               <div key={s.label} className="text-center">
